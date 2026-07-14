@@ -3,14 +3,17 @@
 % Figures are read from local copies in outputs_llms/ and outputs/ (Overleaf-ready),
 % falling back to ../outputs_llms/ and ../outputs/ -- to regenerate, run the pipeline:
 %   uv run socratic-hints all-llm && uv run socratic-hints plot-types-llm
-\documentclass[10pt,aspectratio=169,bookmarks=true,bookmarksopen=true,pdfborder={0 0 0},pdfhighlight={/N},linkbordercolor={rgb}{0.5,0.5,0.5},implicit=false,colorlinks=true,urlcolor=blue]{beamer}
+\documentclass[10pt,aspectratio=169]{beamer}
 
 \usetheme{Madrid}
 \usecolortheme{seahorse}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath}
-%\usepackage[colorlinks=true, urlcolor=blue]{hyperref}
+% Beamer already loads hyperref; configure it here instead of \usepackage.
+% Leaving linkcolor empty keeps beamer's internal links (TOC, navigation)
+% in the theme's own colors; only URLs are forced blue.
+\hypersetup{colorlinks=true, urlcolor=blue, linkcolor=}
 \graphicspath{{outputs_llms/}{outputs/}{../outputs_llms/}{../outputs/}}
 
 \setbeamertemplate{navigation symbols}{}
