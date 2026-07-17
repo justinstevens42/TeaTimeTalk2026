@@ -24,11 +24,14 @@
 \newcommand{\hb}{\textcolor{orange}{[b]}}
 \newcommand{\he}{\textcolor{purple}{[e]}}
 
-\title[Claude classifications of Socratic hints]{What Changes When an LLM Classifies Socratic Math Hints?}
-\subtitle{Hint transitions across domains, Quarfoot problem types, and a look at my own textbook}
+\title[From Hints to Textbooks]{From Hints to Textbooks}
+\subtitle{Studying Scaffolds through LLMs and Bayesian Methods}
 \author{Justin Stevens}
-\institute{Tea-time talk}
+%\institute{Amii Team Time Talks}
 \date{\today}
+\usepackage{biblatex}
+
+\addbibresource{bib.tex}
 
 \begin{document}
 
@@ -49,20 +52,21 @@
     \column{0.58\textwidth}
     \textbf{Where it comes from}
     \begin{itemize}
-      \item Competition problems from the MATH benchmark, each augmented with a
-            \emph{chain of Socratic questions} (Ding et al., CIKM 2024:
-            LLM-generated conversational math lessons)
+      \item Competition problems from the MATH benchmark~\ref{hendrycks}, each augmented with a
+            \emph{chain of Socratic questions}~\cite{dang}
       \item One JSON file per problem:
-            \texttt{problem}, \texttt{level} (1--5), \texttt{type},
-            \texttt{solution}, \texttt{socratic\_questions}
+            \texttt{problem}, \texttt{level} (1--5), \texttt{solution}, \texttt{type},
+     \texttt{socratic\_questions}
     \end{itemize}
     \medskip
+    \pause 
     \textbf{Scale}
     \begin{itemize}
       \item 7 domains $\times$ 565--590 problems $=$ \textbf{4{,}043 problems}
-      \item \textbf{31{,}613 Socratic questions} ($\approx$ 7.8 per problem)
+      \item \textbf{31{,}613 Socratic hints} ($\approx$ 7.8 per problem)
     \end{itemize}
     \column{0.38\textwidth}
+    \pause 
     \begin{center}
       \small
       \begin{tabular}{lr}
@@ -98,8 +102,9 @@
           {\small ``Can you think of other situations where this matters?''}
   \end{description}
   \medskip
-  Goal: learn a $4\times4$ \textbf{transition matrix} $M$ per domain, where $p_{ij}$ is
+    Goal: learn a $4\times4$ \textbf{transition matrix} $M$ per domain, where $p_{ij}$ is
   the probability the next hint is type $j$ given the current one is type $i$.
+
 \end{frame}
 
 \begin{frame}{A worked example (algebra \texttt{hint\_0})}
@@ -121,7 +126,7 @@
   \medskip
   \normalsize
   Labels shown are my hand labels from the report. On this chain
-  \good{Claude reproduces all 8/8} (the regex rubric got 7/8, reading \#3 as bottom-out).
+  \good{Claude reproduces all 8/8} 
 \end{frame}
 
 \begin{frame}{Taxonomy 2: Quarfoot's nine problem types}
