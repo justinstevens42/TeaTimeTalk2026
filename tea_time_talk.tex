@@ -29,9 +29,6 @@
 \author{Justin Stevens}
 %\institute{Amii Team Time Talks}
 \date{\today}
-\usepackage{biblatex}
-
-\addbibresource{bib.tex}
 
 \begin{document}
 
@@ -52,21 +49,21 @@
     \column{0.58\textwidth}
     \textbf{Where it comes from}
     \begin{itemize}
-      \item Competition problems from the MATH benchmark~\ref{hendrycks}, each augmented with a
-            \emph{chain of Socratic questions}~\cite{dang}
+      \item Competition problems from the MATH benchmark\footnote{\tiny Hendrycks et al., \emph{Measuring Mathematical Problem Solving with the MATH Dataset}, NeurIPS 2021.}, each augmented with a
+            \emph{chain of Socratic questions}\footnote{\tiny Ding et al., \emph{Boosting LLMs with Socratic Method for Conversational Mathematics Teaching}, CIKM 2024.}
       \item One JSON file per problem:
             \texttt{problem}, \texttt{level} (1--5), \texttt{solution}, \texttt{type},
      \texttt{socratic\_questions}
     \end{itemize}
     \medskip
-    \pause 
+    \pause
     \textbf{Scale}
     \begin{itemize}
       \item 7 domains $\times$ 565--590 problems $=$ \textbf{4{,}043 problems}
       \item \textbf{31{,}613 Socratic hints} ($\approx$ 7.8 per problem)
     \end{itemize}
     \column{0.38\textwidth}
-    \pause 
+    \pause
     \begin{center}
       \small
       \begin{tabular}{lr}
@@ -102,7 +99,7 @@
           {\small ``Can you think of other situations where this matters?''}
   \end{description}
   \medskip
-    Goal: learn a $4\times4$ \textbf{transition matrix} $M$ per domain, where $p_{ij}$ is
+    Goal: learn a $4\times4$ \textbf{transition matrix} $M$ per group, where $p_{ij}$ is
   the probability the next hint is type $j$ given the current one is type $i$.
 
 \end{frame}
@@ -125,8 +122,8 @@
   \end{enumerate}
   \medskip
   \normalsize
-  Labels shown are my hand labels from the report. On this chain
-  \good{Claude reproduces all 8/8} 
+  Labels shown are my hand labels. On this chain
+  \good{Claude reproduces all 8/8}
 \end{frame}
 
 \begin{frame}{Taxonomy 2: Quarfoot's nine problem types}
@@ -190,10 +187,11 @@
           the single few-shot anchor
     \item Every response is \textbf{validated} (label count $=$ question count, legal codes
           only) and retried on failure --- batch retry, then per-problem retry
-    \item Downstream analysis is \emph{unchanged} from the regex pipeline:
-          Dirichlet--multinomial posterior per group, row-averaged KL, similarity $e^{-KL}$
-    \item Everything mirrors the old layout:
-          \texttt{classifications\_llms/}, \texttt{outputs\_llms/}
+    \item Downstream analysis: group the chains (by domain, or by problem type), count
+          transitions, Dirichlet--multinomial posterior per group, row-averaged
+          symmetrized KL, similarity $e^{-KL}$
+    \item Artifacts: one JSON per problem in \texttt{classifications\_llms/}, figures in
+          \texttt{outputs\_llms/}
   \end{itemize}
 \end{frame}
 
@@ -226,46 +224,44 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Claude and the regex rubric disagree --- a lot}
-  \begin{itemize}
-    \item Hint labels (MATH): agreement on only \textbf{65.0\%} of 31{,}613 questions
-    \item Quarfoot types (MATH): \textbf{30.9\%} of 4{,}043 problems
-    \item Quarfoot types (my book): \textbf{25.3\%} of 533 problems --- consistent story
-  \end{itemize}
-  \smallskip
-  \begin{center}
-    \includegraphics[height=0.52\textheight]{problem_type_hist_llm_vs_regex.png}
-  \end{center}
-  \smallskip
-  Claude concentrates problems in \textbf{Chords} (1{,}501 vs.\ 449) and nearly abandons the
-  open-solution-space types: IM 13, IN 0, MP 2 (regex: 435 / 230 / 292).
-\end{frame}
-
 % ===========================================================================
-\section{Results: which domains differ, and why}
+\section{Headline 1: counting \& probability is different}
 % ===========================================================================
 
-\begin{frame}{How one similarity entry is computed (Claude labels)}
-  \footnotesize
-  Count transitions, add the all-ones Dirichlet prior, normalize rows --- e.g.\ the
-  counting \& probability $f$-row has counts $(491,147,495,40)$, so
-  $p_{ff}=\frac{491+1}{1173+4}\approx 0.418$. Doing this for both domains:
+\begin{frame}{It starts with staring at the raw transition matrices}
+  Per-domain $4\times4$ matrices over \hf\hr\hb\he. Six of the seven look
+  roughly like algebra's. One doesn't:
   \begin{align*}
     M_{\text{algebra}}=\begin{pmatrix}
-      0.227 & 0.224 & 0.498 & 0.051\\
+      \mathbf{0.227} & 0.224 & 0.498 & 0.051\\
       0.160 & 0.272 & 0.502 & 0.067\\
       0.089 & 0.158 & 0.600 & 0.153\\
-      0.030 & 0.073 & 0.193 & 0.704
+      0.030 & 0.073 & \mathbf{0.193} & \mathbf{0.704}
     \end{pmatrix}
     \quad
     M_{\text{count.\ \& prob.}}=\begin{pmatrix}
       \mathbf{0.418} & 0.126 & 0.421 & 0.035\\
       0.184 & 0.242 & 0.441 & 0.133\\
       0.070 & 0.104 & 0.715 & 0.111\\
-      0.030 & 0.060 & 0.079 & \mathbf{0.831}
+      0.030 & 0.060 & \mathbf{0.079} & \mathbf{0.831}
     \end{pmatrix}
   \end{align*}
-  Row-by-row symmetrized KL, then average over the four rows:
+  \begin{itemize}
+    \item $f\!\to\!f = 0.418$: the highest of \emph{any} domain (runner-up: prealgebra
+          0.331) and nearly \textbf{2$\times$} algebra's 0.227 --- c\&p hints chain
+          observation $\to$ observation
+    \item $e\!\to\!b = 0.079$: the lowest of any domain --- once a c\&p chain reaches
+          extensions it almost never drops back into computation ($e\!\to\!e = 0.831$)
+    \item The other rows are unremarkable --- the signal is concentrated, not diffuse
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Compressing a comparison into one number}
+  \footnotesize
+  Count transitions, add the all-ones Dirichlet prior, normalize rows --- e.g.\ the
+  counting \& probability $f$-row has counts $(491,147,495,40)$, so
+  $p_{ff}=\frac{491+1}{1173+4}\approx 0.418$. Then compare two domains row by row:
+  symmetrized KL, averaged over the four rows.
   \begin{center}
     \begin{tabular}{lcccc|c}
       \toprule
@@ -276,26 +272,28 @@
     \end{tabular}
   \end{center}
   \smallskip
-  Similarity $=e^{-0.0549}\approx 0.947$ --- the \emph{lowest} of any pair under Claude labels.
-  The $f$-row does the most work: c\&p chains feature-pointing $\to$ feature-pointing
-  at almost \textbf{2$\times$} algebra's rate (0.418 vs.\ 0.227).
+  Similarity $=e^{-0.0549}\approx 0.947$ --- the \emph{lowest} of any domain pair.
+  The $f$-row does the most work, exactly the observation-chaining row from the
+  previous slide.
 \end{frame}
 
-\begin{frame}{The outlier domain flips: geometry $\to$ counting \& probability}
+\begin{frame}{Across all 21 pairs: counting \& probability is the outlier}
   \begin{columns}[T]
-    \column{0.5\textwidth}
-    \centering RegEx labels \\
-    \includegraphics[height=0.58\textheight]{outputs/similarity_symmetric.png}
-    \column{0.5\textwidth}
-    \centering \textbf{Claude labels} \\
-    \includegraphics[height=0.58\textheight]{similarity_symmetric.png}
+    \column{0.52\textwidth}
+    \begin{center}
+      \includegraphics[height=0.72\textheight]{similarity_symmetric.png}
+    \end{center}
+    \column{0.44\textwidth}
+    \begin{itemize}
+      \item The dark stripe is counting \& probability's row/column: mean similarity
+            to the other domains \textbf{0.958}, the lowest of any domain
+      \item Geometry --- the domain you might have guessed --- is among the most
+            \emph{central} (mean 0.981)
+      \item One-vs-rest permutation test: c\&p diverges most from the pooled rest ---
+            sym.\ KL $0.034$, $\approx 1.7\times$ the runner-up;
+            Holm-adjusted $p < 0.001$
+    \end{itemize}
   \end{columns}
-  \smallskip
-  \begin{itemize}
-    \item RegEx: geometry most dissimilar from everything (the report's conclusion)
-    \item Claude: geometry is among the \emph{most central} domains (mean sim.\ 0.981);
-          \textbf{counting \& probability} is the outlier (mean sim.\ 0.958)
-  \end{itemize}
 \end{frame}
 
 \begin{frame}{Why counting \& probability reads differently}
@@ -320,12 +318,70 @@
           combinatorics hints scaffold by \emph{observation}, not by \emph{principle}
   \end{itemize}
   \medskip
-  \textbf{Takeaway:} with better labels, the geometry-outlier result looks like an artifact
-  of the keyword rubric.
+  \textbf{Takeaway:} the outlier domain isn't the one with the strangest notation ---
+  it's the one whose scaffolding \emph{strategy} differs.
 \end{frame}
 
 % ===========================================================================
-\section{Results: my textbook vs.\ MATH number theory}
+\section{Headline 2: masterpieces are unlike everything else}
+% ===========================================================================
+
+\begin{frame}{Same machinery, new grouping: transitions by problem type}
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+    \begin{center}
+      \includegraphics[height=0.72\textheight]{similarity_types_symmetric.png}
+    \end{center}
+    \column{0.44\textwidth}
+    \begin{itemize}
+      \item Group the same 4{,}043 chains by Claude's \emph{Quarfoot type} instead of
+            by domain, and recompute the similarity matrix
+      \item Every pair of non-masterpiece types: similarity $\geq \mathbf{0.89}$
+      \item Masterpieces vs.\ everything: \textbf{0.73--0.82} (mean 0.77)
+    \end{itemize}
+    \medskip
+    Domains differ by a few percent. Masterpieces sit \emph{outside the family} ---
+    the largest effect anywhere in this study.
+  \end{columns}
+\end{frame}
+
+\begin{frame}{What makes a masterpiece different?}
+  \begin{columns}[T]
+    \column{0.44\textwidth}
+    Raw transition counts, all masterpiece chains:
+    \begin{center}
+      \small
+      \begin{tabular}{l|cccc}
+        & $\to f$ & $\to r$ & $\to b$ & $\to e$ \\
+        \midrule
+        $f$ & 0 & 1 & 1 & 0 \\
+        $r$ & 0 & 0 & 1 & 0 \\
+        $b$ & 0 & 0 & \textbf{5} & 2 \\
+        $e$ & \bad{0} & \bad{0} & \bad{0} & \bad{0} \\
+      \end{tabular}
+    \end{center}
+    \medskip
+    \footnotesize
+    \bad{Caveat:} that is 2 chains, 12 hints --- Claude finds only \textbf{2
+    masterpieces in all 4{,}043 MATH problems}. Read the direction, not the digits.
+    \column{0.52\textwidth}
+    \begin{itemize}
+      \item \textbf{The extension coda vanishes.} Every other type's chains settle into
+            extensions at the end ($e\to e$ from $0.63$ to $0.83$); masterpiece chains
+            never repeat an extension --- \emph{the problem is the extension}
+      \item \textbf{Bottom-out carries the chain}: 7 of 10 transitions start at $b$ ---
+            the hints construct the result step by step
+      \item \textbf{The endpoint of the substance axis.} Moving FN $\to$ SP,
+            $b\to b$ climbs $0.56 \to 0.78$ and the principle-stating share falls
+            $31\% \to 13\%$; masterpieces push both further
+      \item \textbf{And they're vanishingly rare here} --- so rare a competition item
+            bank can't even estimate their dynamics. Where \emph{do} they live?
+    \end{itemize}
+  \end{columns}
+\end{frame}
+
+% ===========================================================================
+\section{My textbook vs.\ MATH number theory}
 % ===========================================================================
 
 \begin{frame}{Same classifier, two corpora: MATH number theory vs.\ book ch.\ 1--10}
@@ -346,7 +402,7 @@
     \begin{itemize}
       \item Thick floor of fluency checks: FN + AC = \textbf{22.6\%}
             (``what is the units digit of\ldots'')
-      \item \bad{Zero Masterpieces} (2 in all 4{,}043 MATH problems)
+      \item \bad{Zero Masterpieces} --- headline 2 in corpus form
       \item A competition \emph{item bank}
     \end{itemize}
     \column{0.5\textwidth}
@@ -368,10 +424,6 @@
   not classifier noise.
 \end{frame}
 
-% ===========================================================================
-\section{Pedagogy and takeaways}
-% ===========================================================================
-
 \begin{frame}{What this offers people who write textbooks}
   \begin{itemize}
     \item \textbf{An audit tool for your problem mix.} Type profiles make the shape of a
@@ -391,27 +443,49 @@
   \end{itemize}
 \end{frame}
 
+% ===========================================================================
+\section{Working with LLMs on the book}
+% ===========================================================================
+
+% TODO(Justin): fill in observations about working with LLMs while developing the book.
+\begin{frame}{Working with LLMs on the book: observations}
+  \vfill
+\end{frame}
+
+% TODO(Justin): second observations slide -- delete if one is enough.
+\begin{frame}{Working with LLMs on the book: observations (cont.)}
+  \vfill
+\end{frame}
+
+% ===========================================================================
+\section{Takeaways}
+% ===========================================================================
+
 \begin{frame}{Takeaways, caveats, next steps}
   \textbf{Takeaways}
   \begin{enumerate}
-    \item LLM labels change the science: the domain outlier flips from geometry to
-          counting \& probability, with an interpretable mechanism
+    \item Counting \& probability scaffolds by \emph{observation}, not principle ---
+          the clear domain outlier, with the mechanism visible in the raw matrices
+    \item Masterpieces' hint dynamics look like no other type's --- and MATH barely
+          contains them (2 of 4{,}043); capstones live in curated texts, not item banks
     \item Problem-type profiles act as corpus fingerprints: item bank vs.\ curated arc
-    \item The whole pipeline is cheap enough to be a routine tool ($\approx$ 80 min, \$0 marginal)
+          --- and the whole pipeline is cheap enough to be routine ($\approx$ 80 min, \$0 marginal)
   \end{enumerate}
   \medskip
   \textbf{Caveats}
   \begin{itemize}
     \item No human-labeled evaluation set yet --- the earlier ``gold set'' was itself
           LLM-authored, so I dropped it; a real one is the top priority
+    \item The masterpiece transition matrix rests on 2 chains --- the outlier direction
+          is consistent, but the estimate is prior-dominated
     \item Claude saw the worked solution: single-solution write-ups may bias it against
-          open-ended types (IM/IN) and Masterpieces
-    \item One model, one prompt --- no inter-rater $\kappa$ yet
+          open-ended types (IM/IN) and Masterpieces; one model, one prompt --- no
+          inter-rater $\kappa$ yet
   \end{itemize}
   \medskip
   \textbf{Next steps:} human gold set + Cohen's $\kappa$ with a second annotator;
-  hint transitions vs.\ difficulty level; HMM over noisy labels; blind the classifier
-  to the solution text as a robustness check.
+  generate Socratic chains for the book's 40 Masterpieces to test headline 2 at real
+  sample size; hint transitions vs.\ difficulty level; HMM over noisy labels.
 \end{frame}
 
 \begin{frame}
