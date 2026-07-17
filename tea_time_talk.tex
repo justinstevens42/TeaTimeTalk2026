@@ -323,59 +323,81 @@
 \end{frame}
 
 % ===========================================================================
-\section{Headline 2: masterpieces are unlike everything else}
+\section{Headline 2: harder problems have different transition matrices}
 % ===========================================================================
+% Numbers in this section are computed from the pipeline's
+% outputs_llms/classified_hints.csv and problem_type_analysis_summary.json:
+% per-problem transition counts aggregated over FN/AC/CH/ET vs IM/IN/FP/SP/MP,
+% all-ones Dirichlet prior, row-averaged symmetrized KL (0.0386), and a
+% problem-level permutation test (10,000 shuffles of the half assignment, seed 0).
 
-\begin{frame}{Same machinery, new grouping: transitions by problem type}
-  \begin{columns}[T]
-    \column{0.52\textwidth}
-    \begin{center}
-      \includegraphics[height=0.72\textheight]{similarity_types_symmetric.png}
-    \end{center}
-    \column{0.44\textwidth}
-    \begin{itemize}
-      \item Group the same 4{,}043 chains by Claude's \emph{Quarfoot type} instead of
-            by domain, and recompute the similarity matrix
-      \item Every pair of non-masterpiece types: similarity $\geq \mathbf{0.89}$
-      \item Masterpieces vs.\ everything: \textbf{0.73--0.82} (mean 0.77)
-    \end{itemize}
-    \medskip
-    Domains differ by a few percent. Masterpieces sit \emph{outside the family} ---
-    the largest effect anywhere in this study.
-  \end{columns}
+\begin{frame}{Split the substance axis in half: routine vs.\ complex}
+  Group the same 4{,}043 chains by Claude's \emph{Quarfoot type}, split at the axis
+  midpoint: \textbf{routine} $=$ FN/AC/CH/ET (2{,}880 problems, 19{,}046 transitions)
+  vs.\ \textbf{complex} $=$ IM/IN/FP/SP/MP (1{,}163 problems, 8{,}524 transitions):
+  \begin{align*}
+    M_{\text{routine}}=\begin{pmatrix}
+      0.283 & 0.219 & 0.452 & 0.046\\
+      0.134 & 0.303 & 0.482 & 0.081\\
+      0.079 & 0.142 & \mathbf{0.628} & \mathbf{0.150}\\
+      0.017 & 0.058 & 0.136 & 0.789
+    \end{pmatrix}
+    \quad
+    M_{\text{complex}}=\begin{pmatrix}
+      0.338 & 0.156 & 0.486 & 0.020\\
+      0.177 & 0.270 & 0.525 & 0.029\\
+      0.071 & 0.080 & \mathbf{0.771} & \mathbf{0.078}\\
+      0.064 & 0.046 & 0.145 & 0.746
+    \end{pmatrix}
+  \end{align*}
+  \begin{itemize}
+    \item $b\to b$: $0.628 \to \mathbf{0.771}$ --- complex problems' hints run long
+          \emph{bottom-out constructions}; the $b$-row alone carries the most KL
+    \item The whole $e$-column collapses: $b\to e$ halves ($0.150 \to 0.078$), and
+          extensions fall from 5.9\% of hints to \textbf{2.0\%}
+    \item Principle-stating share drops $23.9\% \to 15.1\%$ --- fewer ``recall the theorem'' moves
+  \end{itemize}
+  \smallskip
+  Similarity $e^{-0.0386} = \mathbf{0.962}$; problem-level permutation test:
+  $p < 10^{-4}$ (0 of 10{,}000 shuffles reach it). Only \textbf{4 of 21} domain pairs
+  are farther apart --- all four involve counting \& probability.
 \end{frame}
 
-\begin{frame}{What makes a masterpiece different?}
+\begin{frame}{Not a threshold but a gradient --- and where it ends}
   \begin{columns}[T]
-    \column{0.44\textwidth}
-    Raw transition counts, all masterpiece chains:
+    \column{0.42\textwidth}
     \begin{center}
       \small
-      \begin{tabular}{l|cccc}
-        & $\to f$ & $\to r$ & $\to b$ & $\to e$ \\
+      \begin{tabular}{lrccc}
+        \toprule
+        type & $n$ & $r$ share & $b\to b$ & $e$ share \\
         \midrule
-        $f$ & 0 & 1 & 1 & 0 \\
-        $r$ & 0 & 0 & 1 & 0 \\
-        $b$ & 0 & 0 & \textbf{5} & 2 \\
-        $e$ & \bad{0} & \bad{0} & \bad{0} & \bad{0} \\
+        FN & 658   & 31\% & 0.56 & 10\% \\
+        AC & 289   & 23\% & 0.63 & 5\%  \\
+        CH & 1{,}501 & 24\% & 0.63 & 5\%  \\
+        ET & 432   & 16\% & 0.69 & 4\%  \\
+        \midrule
+        IM & 13    & 16\% & 0.64 & 4\%  \\
+        FP & 661   & 16\% & 0.77 & 2\%  \\
+        SP & 487   & 13\% & 0.78 & 2\%  \\
+        MP & 2     & 10\% & ---  & 0\%  \\
+        \bottomrule
       \end{tabular}
     \end{center}
-    \medskip
+    \smallskip
     \footnotesize
-    \bad{Caveat:} that is 2 chains, 12 hints --- Claude finds only \textbf{2
-    masterpieces in all 4{,}043 MATH problems}. Read the direction, not the digits.
-    \column{0.52\textwidth}
+    IN: 0 problems; MP: 2 --- too few to estimate a matrix.
+    \column{0.54\textwidth}
     \begin{itemize}
-      \item \textbf{The extension coda vanishes.} Every other type's chains settle into
-            extensions at the end ($e\to e$ from $0.63$ to $0.83$); masterpiece chains
-            never repeat an extension --- \emph{the problem is the extension}
-      \item \textbf{Bottom-out carries the chain}: 7 of 10 transitions start at $b$ ---
-            the hints construct the result step by step
-      \item \textbf{The endpoint of the substance axis.} Moving FN $\to$ SP,
-            $b\to b$ climbs $0.56 \to 0.78$ and the principle-stating share falls
-            $31\% \to 13\%$; masterpieces push both further
-      \item \textbf{And they're vanishingly rare here} --- so rare a competition item
-            bank can't even estimate their dynamics. Where \emph{do} they live?
+      \item The split is not an artifact of where the line is drawn: moving FN $\to$ SP,
+            principle-stating falls $31\% \to 13\%$, $b\to b$ climbs $0.56 \to 0.78$,
+            extensions fade $10\% \to 2\%$
+      \item Reading: routine problems' hints \emph{teach} --- state the rule, compute,
+            generalize at the end; complex problems' hints \emph{build} --- chain the
+            construction step by step
+      \item \textbf{Hints stop teaching and start building.}
+      \item The capstone end of the axis is nearly absent here: 2 Masterpieces and 0
+            Interpretations in all of MATH. Where do capstones actually live?
     \end{itemize}
   \end{columns}
 \end{frame}
@@ -402,14 +424,14 @@
     \begin{itemize}
       \item Thick floor of fluency checks: FN + AC = \textbf{22.6\%}
             (``what is the units digit of\ldots'')
-      \item \bad{Zero Masterpieces} --- headline 2 in corpus form
+      \item \bad{Zero Masterpieces}; only 25\% of problems in the complex half of the axis
       \item A competition \emph{item bank}
     \end{itemize}
     \column{0.5\textwidth}
     \textbf{Book chapters 1--10} (n = 528)
     \begin{itemize}
       \item Light on drills: FN + AC = 8.7\%
-      \item More multi-idea planning: FP 22.9\% vs.\ 16.0\%
+      \item \textbf{42\%} in the complex half: FP 22.9\% vs.\ 16.0\%
       \item \good{7.6\% Masterpieces} --- culminating capstones (Zeckendorf, USAMO, Putnam)
       \item A curated \emph{learning arc}
     \end{itemize}
@@ -466,8 +488,9 @@
   \begin{enumerate}
     \item Counting \& probability scaffolds by \emph{observation}, not principle ---
           the clear domain outlier, with the mechanism visible in the raw matrices
-    \item Masterpieces' hint dynamics look like no other type's --- and MATH barely
-          contains them (2 of 4{,}043); capstones live in curated texts, not item banks
+    \item Complexity shows up in the dynamics: complex problems' chains run long
+          bottom-out constructions and drop principle-stating and extensions ---
+          hints stop teaching and start building ($p < 10^{-4}$)
     \item Problem-type profiles act as corpus fingerprints: item bank vs.\ curated arc
           --- and the whole pipeline is cheap enough to be routine ($\approx$ 80 min, \$0 marginal)
   \end{enumerate}
@@ -476,16 +499,17 @@
   \begin{itemize}
     \item No human-labeled evaluation set yet --- the earlier ``gold set'' was itself
           LLM-authored, so I dropped it; a real one is the top priority
-    \item The masterpiece transition matrix rests on 2 chains --- the outlier direction
-          is consistent, but the estimate is prior-dominated
+    \item The capstone end of the axis is nearly absent from MATH (2 Masterpieces,
+          0 Interpretations) --- the complex half is effectively IM/FP/SP
     \item Claude saw the worked solution: single-solution write-ups may bias it against
           open-ended types (IM/IN) and Masterpieces; one model, one prompt --- no
           inter-rater $\kappa$ yet
   \end{itemize}
   \medskip
   \textbf{Next steps:} human gold set + Cohen's $\kappa$ with a second annotator;
-  generate Socratic chains for the book's 40 Masterpieces to test headline 2 at real
-  sample size; hint transitions vs.\ difficulty level; HMM over noisy labels.
+  generate Socratic chains for the book's complex-half problems (including its 40
+  Masterpieces) to test headline 2 where capstones actually live; hint transitions
+  vs.\ difficulty level; HMM over noisy labels.
 \end{frame}
 
 \begin{frame}
