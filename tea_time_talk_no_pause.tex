@@ -36,6 +36,7 @@
   \titlepage
 \end{frame}
 
+
 \begin{frame}{The problem \& questions }
 \begin{itemize}
     \item Many students are using LLMs for education 
@@ -43,9 +44,9 @@
     \item Last summer, I gave an \href{https://www.youtube.com/watch?v=ECm2GY9uZN8}{AI Seminar on Intelligent Tutoring Systems}
     \item Hints are an important part of Intelligent Tutoring Systems
     \end{itemize} 
-    \medskip \pause 
+    \medskip  
     \item Can we learn about the types of hints LLMs provide learners by automatically classifying the hints?
-    \medskip \pause 
+    \medskip  
     \item Can we learn about the distribution of problem types that can help inform pedagogical decisions?
 \end{itemize}
 \end{frame}
@@ -66,14 +67,14 @@
      \texttt{socratic\_questions}
     \end{itemize}
     \medskip
-    \pause
+    
     \textbf{Scale}
     \begin{itemize}
       \item 7 domains $\times$ 565--590 problems $=$ \textbf{4{,}043 problems}
       \item \textbf{31{,}613 Socratic hints} ($\approx$ 7.8 per problem)
     \end{itemize}
     \column{0.38\textwidth}
-    \pause
+    
     \begin{center}
       \small
       \begin{tabular}{lr}
@@ -99,16 +100,16 @@
   Goldin, Koedinger \& Aleven (2013) plus one extra type for Socratic chains:
   \medskip
   \begin{description}
-    \item[\hf~feature-pointing] draws attention to a specific aspect of this problem \\ {\small ``Notice that these two angles are vertical angles''} \pause 
+    \item[\hf~feature-pointing] draws attention to a specific aspect of this problem \\ {\small ``Notice that these two angles are vertical angles''}  
     \item[\hr~principle-stating] supplies a general rule, definition, or theorem \\ 
-          {\small ``Vertical angles are equal in measure''} \pause 
+          {\small ``Vertical angles are equal in measure''}  
     \item[\hb~bottom-out] directly advances the solution to set up, substitute, solve, etc. \\
-          {\small ``Add these two known angles to find the missing one''} \pause 
+          {\small ``Add these two known angles to find the missing one''}  
     \item[\he~extension] pushes past the current problem to think of applications, generalizations \\
           {\small ``Can you think of other situations where this matters?''}  
   \end{description}
   \medskip
-  \pause 
+   
     Goal: learn a $4\times4$ \textbf{transition matrix} $M$ per group, where $p_{ij}$ is the probability the next hint is type $j$ given the current one is type $i$.
 
 \end{frame}
@@ -120,14 +121,14 @@
   \quad Find $a+b$ if $f$ is continuous.
   \medskip
   \begin{enumerate}\footnotesize
-    \item Can you explain what a piecewise function is and how it is represented algebraically? \pause ~\hf \pause 
-    \item How would you determine if the function is continuous where different pieces meet? \pause ~\hr \pause 
-    \item What conditions need to be satisfied for a piecewise function to be continuous?\pause ~\hf \pause 
-    \item Can you identify the value of $a$ and $b$ that would make the function continuous?\pause ~\hb \pause 
-    \item How would you approach solving for $a$ and $b$?\pause ~\hb \pause 
-    \item Are there any restrictions or constraints on the values of $a$ and $b$?\pause ~\hb \pause 
-    \item Can you explain the significance of continuity in real-life applications?\pause ~\he \pause 
-    \item Can you think of other examples where continuity is important?\pause ~\he \pause 
+    \item Can you explain what a piecewise function is and how it is represented algebraically?  ~\hf  
+    \item How would you determine if the function is continuous where different pieces meet?  ~\hr  
+    \item What conditions need to be satisfied for a piecewise function to be continuous? ~\hf  
+    \item Can you identify the value of $a$ and $b$ that would make the function continuous? ~\hb  
+    \item How would you approach solving for $a$ and $b$? ~\hb  
+    \item Are there any restrictions or constraints on the values of $a$ and $b$? ~\hb  
+    \item Can you explain the significance of continuity in real-life applications? ~\he  
+    \item Can you think of other examples where continuity is important? ~\he  
   \end{enumerate}
   \medskip
   \normalsize
@@ -136,15 +137,17 @@
 \end{frame}
 
 
-\begin{frame}{Method: one Claude call per problem, two classifications}
+\begin{frame}{Methodology: one Claude call per problem}
   \begin{itemize}
     \item \texttt{claude-opus-4-8} receives the problem, difficulty level, worked solution, and the numbered Socratic chain, and returns strict JSON:
     \begin{enumerate}
       \item one hint label (\texttt{f/r/b/e}) per question, in order
       \item one Quarfoot type for the whole problem
     \end{enumerate}
+    \medskip 
     \item Prompt contains both taxonomies' definitions + the worked example above as a few-shot prompt 
     \item Every response is \textbf{validated} to make sure it is in the correct output format and retried on failure. 
+    \medskip 
     \item Downstream analysis: group the chains (by domain, or by problem type), count
           transitions, Dirichlet--multinomial posterior per group, row-averaged
           symmetrized KL, similarity $e^{-KL}$
@@ -202,7 +205,7 @@
           \bottomrule
         \end{tabular}
       \end{center}
-      \pause 
+       
       \medskip 
     \item Intuition: ``notice how many ways\ldots'' (a feature pointing hint ~\hf) is more common in counting \& probability than ``recall the theorem\ldots'' (a principle-stating hint ~\hr)
   \end{itemize}
@@ -218,7 +221,7 @@
 % problem-level permutation test (10,000 shuffles of the half assignment, seed 0).
 
 \begin{frame}{Taxonomy 2: Quarfoot's nine problem types}
-  A musical metaphor, ordered (roughly) least $\to$ most mathematical substance: \pause 
+  A musical metaphor, ordered (roughly) least $\to$ most mathematical substance:  
   \medskip
   \begin{center}
     \small
@@ -226,14 +229,14 @@
       \toprule
       & type & what it is \\
       \midrule
-      FN & First Notes & one-step, single-path, algorithmic; fluency \\ \pause 
-      AC & Accidentals & looks routine, hides a twist; targets a misconception \\ \pause 
-      CH & Chords & one idea, several steps; deepens a single concept \\ \pause 
-      ET & Etudes & drills one technique; word-problem dressing \\ \pause 
-      IM & Improvisations & a playground; first attempts fail, so you experiment \\ \pause 
-      IN & Interpretations & wide-open solution space; compare qualitatively different paths \\ \pause 
-      FP & First Pieces & first problems needing multiple ideas plus a macro-level plan \\ \pause 
-      SP & Showpieces & very hard, hinges on a flash of insight; cognitive \\ \pause 
+      FN & First Notes & one-step, single-path, algorithmic; fluency \\  
+      AC & Accidentals & looks routine, hides a twist; targets a misconception \\  
+      CH & Chords & one idea, several steps; deepens a single concept \\  
+      ET & Etudes & drills one technique; word-problem dressing \\  
+      IM & Improvisations & a playground; first attempts fail, so you experiment \\  
+      IN & Interpretations & wide-open solution space; compare qualitatively different paths \\  
+      FP & First Pieces & first problems needing multiple ideas plus a macro-level plan \\  
+      SP & Showpieces & very hard, hinges on a flash of insight; cognitive \\  
       MP & Masterpieces & many skills converging on a generalizable truth; capstones \\
       \bottomrule
     \end{tabular}
@@ -242,13 +245,13 @@
 
 \begin{frame}{Comparing Routine vs. Complex Problem Types}
   Group the hints by classification of \emph{Quarfoot type}, split into \textbf{routine} $=$ first notes/accidentals/chords/etudes (2{,}880 problems, 19{,}046 transitions)
-  vs.\ \textbf{complex} $=$ improvisations/interpretations/first pieces/showpieces/masterpieces (1{,}163 problems, 8{,}524 transitions): \pause 
+  vs.\ \textbf{complex} $=$ improvisations/interpretations/first pieces/showpieces/masterpieces (1{,}163 problems, 8{,}524 transitions):  
 
   \bigskip 
 
   The mean level of the problems in the \textbf{routine} group is 2.86/5, and in the \textbf{complex} group is 4.51/5. 
 
-  \bigskip \pause 
+  \bigskip  
   Similarity $e^{-0.0386} = \mathbf{0.962}$; only \textbf{4 of 21} domain pairs
   are farther apart (all with counting \& probability)
 \end{frame}
@@ -260,7 +263,7 @@
     \small
     \begin{tabular}{lrccc}
       \toprule
-      type & $n$ & Principle Stating Share & $b\to b$ & Extension share \\
+      type & $n$ & Principle Stating \% & $b\to b$ & Extension \% \\
       \midrule
       First Notes & 658   & 31\% & 0.56 & 10\% \\
       Accidentals & 289   & 23\% & 0.63 & 5\%  \\
@@ -277,11 +280,11 @@
     \vspace{0.75em} % Adds breathing room between table and text
     
     \begin{minipage}{0.95\textwidth}
-      \footnotesize % Drops font size slightly below the table's \small \pause 
+      \footnotesize % Drops font size slightly below the table's \small  
       \textbf{Routine problems:} Often principle-stating; hints state the principle~\hr, then generalize away the problem~\he. 
       
       \vspace{0.3em}
-       \pause 
+        
       \textbf{Complex problems:} No single rule solves them all, so hints enumerate the plan instead (higher $\hb\to\hb$). 
     \end{minipage}
   \end{table} 
@@ -345,11 +348,6 @@ INSERT QR CODE HERE
 
 \end{frame} 
 
-\begin{frame}{AI Disclaimer}
-Claude's Anthropic Opus 4.8 \& Fable models were used to assist with writing code and analysis and to help create a first draft of these slides, which were then refined by me to deliver this presentation. 
-
-\end{frame}
-
 
 \begin{frame}{Roadmap}
 
@@ -365,136 +363,10 @@ Claude's Anthropic Opus 4.8 \& Fable models were used to assist with writing cod
   Code available \href{https://github.com/justinstevens42/SocraticMath}{here}.
 \end{frame}
 
-
-\section{Bonus Slides}
-
-\begin{frame}{The nine types, illustrated from my number theory textbook}
-  Claude's classification of \emph{Olympiad Number Theory} problems (533 total), one example each:
-  \begin{center}
-    \footnotesize
-    \begin{tabular}{lp{0.66\textwidth}l}
-      \toprule
-      type & problem & source \\
-      \midrule
-      FN & Find $x$ such that $1+x+x^2+x^3+\cdots=4$. & Mandelbrot \\
-      AC & Show there are no integers $x,y$ with $1691x+1349y=1$. & Ch.\ 5 \\
-      CH & The sum of 18 consecutive positive integers is a perfect square. Find the smallest possible such sum. & AMC 12 \\
-      ET & Compute $\sum_{m=1}^{75}(2+3m)$. & Ch.\ 1 \\
-      IM & Pages numbered $1$--$n$; one page number was accidentally added twice, giving $1986$. Which page? & AIME \\
-      IN & Prove these Fibonacci identities \emph{in two different ways}. & Ch.\ 2 \\
-      FP & Find the 8th term of $1440, 1716, 1848,\ldots$, formed by multiplying corresponding terms of two arithmetic sequences. & AIME \\
-      SP & Evaluate $\prod_{n=2}^{\infty}\frac{n^3-1}{n^3+1}$. & Putnam \\
-      MP & Prove every positive integer is a sum of non-consecutive Fibonacci numbers. & Zeckendorf \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
-\end{frame}
-
-\begin{frame}{Infrastructure: written by Claude, run on Claude}
-  \begin{columns}[T]
-    \column{0.52\textwidth}
-    \textbf{Built with Claude Code}
-    \begin{itemize}
-      \item Agent wrote the backend, classifier, CLI commands, and plots inside the
-            existing \texttt{uv} project
-      \item Backend auto-selects: Anthropic SDK if an API key is set, else headless
-            \texttt{claude -p} calls on my Claude subscription
-      \item Batched 10 problems/call ($\approx$ 410 calls), 12 parallel workers
-    \end{itemize}
-    \column{0.44\textwidth}
-    \textbf{Robustness (needed it!)}
-    \begin{itemize}
-      \item Resumable: each problem's JSON written on arrival; re-runs skip finished work
-      \item Circuit breaker: 3 consecutive all-fail batches $\Rightarrow$ stop
-            (usage limit), auto-resume later
-    \end{itemize}
-  \end{columns}
-  \bigskip
-  \textbf{Compute \& cost}
-  \begin{itemize}
-    \item Throughput $\approx$ 53 problems/min $\Rightarrow$ $\approx$ \textbf{80 min of active compute}
-          for all 4{,}043 problems ($\approx$ 3 h wall clock: hit the subscription usage limit twice, auto-resumed)
-    \item Marginal cost: \textbf{\$0} on the subscription
-          ($\approx$ \$60 API-equivalent at Opus list prices)
-  \end{itemize}
-\end{frame}
-
-
-\begin{frame}{Compressing a comparison into one number}
-  \footnotesize
-  Count transitions, add the all-ones Dirichlet prior, normalize rows --- e.g.\ the
-  counting \& probability $f$-row has counts $(491,147,495,40)$, so
-  $p_{ff}=\frac{491+1}{1173+4}\approx 0.418$. Then compare two domains row by row:
-  symmetrized KL, averaged over the four rows.
-  \begin{center}
-    \begin{tabular}{lcccc|c}
-      \toprule
-      row & $f$ & $r$ & $b$ & $e$ & mean \\
-      \midrule
-      $\tfrac12\!\left[KL(A\|C)+KL(C\|A)\right]$ & \textbf{0.096} & 0.030 & 0.030 & 0.063 & \textbf{0.0549} \\
-      \bottomrule
-    \end{tabular}
-  \end{center}
-  \smallskip
-  Similarity $=e^{-0.0549}\approx 0.947$ --- the \emph{lowest} of any domain pair.
-  The $f$-row does the most work, exactly the observation-chaining row from the
-  previous slide.
-\end{frame}
-
-\begin{frame}{Raw Numbers: Quarfoot Problem Type}
-  \begin{align*}
-    M_{\text{routine}}=\begin{pmatrix}
-      0.283 & 0.219 & 0.452 & 0.046\\
-      0.134 & 0.303 & 0.482 & 0.081\\
-      0.079 & 0.142 & \mathbf{0.628} & \mathbf{0.150}\\
-      0.017 & 0.058 & 0.136 & 0.789
-    \end{pmatrix}
-    \quad
-    M_{\text{complex}}=\begin{pmatrix}
-      0.338 & 0.156 & 0.486 & 0.020\\
-      0.177 & 0.270 & 0.525 & 0.029\\
-      0.071 & 0.080 & \mathbf{0.771} & \mathbf{0.078}\\
-      0.064 & 0.046 & 0.145 & 0.746
-    \end{pmatrix}
-  \end{align*}
-  \begin{itemize}
-    \item $b\to b$: $0.628 \to \mathbf{0.771}$ --- complex problems' hints run long
-          \emph{bottom-out constructions}; the $b$-row alone carries the most KL
-    \item The whole $e$-column collapses: $b\to e$ halves ($0.150 \to 0.078$), and
-          extensions fall from 5.9\% of hints to \textbf{2.0\%}
-    \item Principle-stating share drops $23.9\% \to 15.1\%$ --- fewer ``recall the theorem'' moves
-  \end{itemize}
+\begin{frame}{AI Disclaimer}
+Claude's Anthropic Opus 4.8 \& Fable models were used to assist with writing code and analysis and to help create a first draft of these slides, which were then refined by the author to deliver this presentation. 
 
 \end{frame}
 
-\begin{frame}{Reading the tails as pedagogy}
-  \begin{columns}[T]
-    \column{0.5\textwidth}
-    \textbf{MATH number theory} (n = 583)
-    \begin{itemize}
-      \item Thick floor of fluency checks: FN + AC = \textbf{22.6\%}
-            (``what is the units digit of\ldots'')
-      \item \bad{Zero Masterpieces}; only 25\% of problems in the complex half of the axis
-      \item A competition \emph{item bank}
-    \end{itemize}
-    \column{0.5\textwidth}
-    \textbf{Book chapters 1--10} (n = 528)
-    \begin{itemize}
-      \item Light on drills: FN + AC = 8.7\%
-      \item \textbf{42\%} in the complex half: FP 22.9\% vs.\ 16.0\%
-      \item \good{7.6\% Masterpieces} --- culminating capstones (Zeckendorf, USAMO, Putnam)
-      \item A curated \emph{learning arc}
-    \end{itemize}
-  \end{columns}
-  \bigskip
-  The arc is visible \emph{within} the book too: the share of high-substance problems
-  (FP/SP/MP) climbs from \textbf{24\%} in Ch.\ 1 to $\approx$ \textbf{50\%} by Ch.\ 9--10.
-  \smallskip
 
-  \textbf{Why this is credible:} identical classifier, prompt, and rubric on both corpora ---
-  near-identical middles, sharply different tails $\Rightarrow$ properties of the corpora,
-  not classifier noise.
-\end{frame}
-
-
-\end{document}
+\end{document} 
