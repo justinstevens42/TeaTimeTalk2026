@@ -36,7 +36,6 @@
   \titlepage
 \end{frame}
 
-
 \begin{frame}{The problem \& questions }
 \begin{itemize}
     \item Many students are using LLMs for education 
@@ -137,17 +136,15 @@
 \end{frame}
 
 
-\begin{frame}{Methodology: one Claude call per problem}
+\begin{frame}{Method: one Claude call per problem, two classifications}
   \begin{itemize}
     \item \texttt{claude-opus-4-8} receives the problem, difficulty level, worked solution, and the numbered Socratic chain, and returns strict JSON:
     \begin{enumerate}
       \item one hint label (\texttt{f/r/b/e}) per question, in order
       \item one Quarfoot type for the whole problem
     \end{enumerate}
-    \medskip 
     \item Prompt contains both taxonomies' definitions + the worked example above as a few-shot prompt 
     \item Every response is \textbf{validated} to make sure it is in the correct output format and retried on failure. 
-    \medskip 
     \item Downstream analysis: group the chains (by domain, or by problem type), count
           transitions, Dirichlet--multinomial posterior per group, row-averaged
           symmetrized KL, similarity $e^{-KL}$
@@ -201,7 +198,7 @@
           & f & r & b & e \\
           \midrule
           counting \& probability & \textbf{23.9\%} & \textbf{13.9\%} & 50.0\% & 12.1\% \\
-          all domains (mean)      & 18.9\% & 18.6\% & 51.5\% & 10.9\% \\
+          all domains (pooled)    & 19.0\% & 18.6\% & 51.5\% & 10.9\% \\
           \bottomrule
         \end{tabular}
       \end{center}
@@ -221,7 +218,7 @@
 % problem-level permutation test (10,000 shuffles of the half assignment, seed 0).
 
 \begin{frame}{Taxonomy 2: Quarfoot's nine problem types}
-  A musical metaphor, ordered (roughly) least $\to$ most mathematical substance:  
+  A musical metaphor, ordered (roughly) least $\to$ most mathematical substance: \footnote{The Music of Mathematics: Toward a New Problem Typology, \textit{David Quarfoot PhD thesis}, UCSD}  
   \medskip
   \begin{center}
     \small
@@ -244,12 +241,11 @@
 \end{frame}
 
 \begin{frame}{Comparing Routine vs. Complex Problem Types}
-  Group the hints by classification of \emph{Quarfoot type}, split into \textbf{routine} $=$ first notes/accidentals/chords/etudes (2{,}880 problems, 19{,}046 transitions)
-  vs.\ \textbf{complex} $=$ improvisations/interpretations/first pieces/showpieces/masterpieces (1{,}163 problems, 8{,}524 transitions):  
+  Group the hints by classification of \emph{Quarfoot type}, split into \textbf{routine} vs. \textbf{complex}  
 
   \bigskip 
 
-  The mean level of the problems in the \textbf{routine} group is 2.86/5, and in the \textbf{complex} group is 4.51/5. 
+  The mean level of the problems in the \textbf{routine} group is 2.86/5, and in the \textbf{complex} group is 4.51/5
 
   \bigskip  
   Similarity $e^{-0.0386} = \mathbf{0.962}$; only \textbf{4 of 21} domain pairs
@@ -263,17 +259,17 @@
     \small
     \begin{tabular}{lrccc}
       \toprule
-      type & $n$ & Principle Stating \% & $b\to b$ & Extension \% \\
+      type & $n$ & Principle Stating Marginal & $b\to b$ & Extension Marginal \\
       \midrule
-      First Notes & 658   & 31\% & 0.56 & 10\% \\
-      Accidentals & 289   & 23\% & 0.63 & 5\%  \\
-      Chords & 1{,}501 & 24\% & 0.63 & 5\%  \\
-      Etudes & 432   & 16\% & 0.69 & 4\%  \\
+      First Notes & 658   & 26\% & 0.56 & 18\% \\
+      Accidentals & 289   & 20\% & 0.63 & 12\%  \\
+      Chords & 1{,}501 & 21\% & 0.63 & 12\%  \\
+      Etudes & 432   & 14\% & 0.69 & 11\%  \\
       \midrule
-      Improvisations & 13    & 16\% & 0.64 & 4\%  \\
-      First Pieces & 661   & 16\% & 0.77 & 2\%  \\
-      Showpieces & 487   & 13\% & 0.78 & 2\%  \\
-      Masterpieces & 2     & 10\% & ---  & 0\%  \\
+      Improvisations & 13    & 14\% & 0.64 & 13\%  \\
+      First Pieces & 661   & 14\% & 0.77 & 6\%  \\
+      Showpieces & 487   & 12\% & 0.78 & 6\%  \\
+      Masterpieces & 2     & --- & ---  & ---  \\
       \bottomrule
     \end{tabular}
     
@@ -320,6 +316,26 @@ INSERT QR CODE HERE
 
 \end{frame}
 
+\begin{frame}{The nine types with problems from my Olympiad Number Theory book}
+  \begin{center}
+    \small
+    \begin{tabular}{lp{0.66\textwidth}l}
+      \toprule
+      type & problem & source \\
+      \midrule
+      First Notes & Find $x$ such that $1+x+x^2+x^3+\cdots=4$. & Mandelbrot \\
+      Accidentals & Show there are no integers $x,y$ with $1691x+1349y=1$. & Ch.\ 5 \\
+      Chords & The sum of 18 consecutive positive integers is a perfect square. Find the smallest possible such sum. & AMC 12 \\
+      Etudes & Compute $\displaystyle \sum_{m=1}^{75}(2+3m)$. & Ch.\ 1 \\
+      Improvisations & Pages numbered $1$--$n$; one page number was accidentally added twice, giving $1986$. Which page? & AIME \\
+      Interpretations & Prove these Fibonacci identities \emph{in two different ways}. & Ch.\ 2 \\
+      First Pieces & Find the 8th term of $1440, 1716, 1848,\ldots$, formed by multiplying corresponding terms of two arithmetic sequences. & AIME \\
+      Showpieces & Evaluate $\displaystyle \prod_{n=2}^{\infty}\frac{n^3-1}{n^3+1}$. & Putnam \\
+      Masterpieces & Prove every positive integer is a sum of non-consecutive Fibonacci numbers. & Zeckendorf \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+\end{frame}
 
 \begin{frame}{Problem Distribution: My Book vs. Number Theory MATH datset}
   \begin{center}
@@ -348,6 +364,11 @@ INSERT QR CODE HERE
 
 \end{frame} 
 
+\begin{frame}{AI Disclaimer}
+Claude's Anthropic Opus 4.8 \& Fable models were used to assist with writing code and analysis and to help create a first draft of these slides, which were then refined by me to deliver this presentation. 
+
+\end{frame}
+
 
 \begin{frame}{Roadmap}
 
@@ -363,10 +384,7 @@ INSERT QR CODE HERE
   Code available \href{https://github.com/justinstevens42/SocraticMath}{here}.
 \end{frame}
 
-\begin{frame}{AI Disclaimer}
-Claude's Anthropic Opus 4.8 \& Fable models were used to assist with writing code and analysis and to help create a first draft of these slides, which were then refined by the author to deliver this presentation. 
-
-\end{frame}
 
 
-\end{document} 
+
+\end{document}
