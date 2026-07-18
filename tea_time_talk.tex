@@ -6,7 +6,7 @@
 \documentclass[10pt,aspectratio=169]{beamer}
 
 \usetheme{Madrid}
-\usecolortheme{seahorse}
+\usecolortheme{beaver}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath}
@@ -17,6 +17,20 @@
 \graphicspath{{outputs_llms/}{outputs/}{../outputs_llms/}{../outputs/}}
 
 \setbeamertemplate{navigation symbols}{}
+% Footer matching NumberTheory lecture slides: author | short title + frame number
+\setbeamertemplate{footline}
+{
+  \leavevmode%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.4\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+      \usebeamerfont{author in head/foot}\insertshortauthor
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.6\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+      \usebeamerfont{title in head/foot}\insertshorttitle\hspace*{3em}
+      \insertframenumber{} / \inserttotalframenumber\hspace*{1ex}
+  \end{beamercolorbox}}%
+  \vskip0pt%
+}
 \newcommand{\good}[1]{\textcolor{blue}{#1}}
 \newcommand{\bad}[1]{\textcolor{red}{#1}}
 \newcommand{\hf}{\textcolor{blue}{[f]}}
