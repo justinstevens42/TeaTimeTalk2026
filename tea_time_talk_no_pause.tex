@@ -41,7 +41,7 @@
 \title[From Hints to Textbooks]{From Hints to Textbooks}
 \subtitle{Studying Scaffolds through Bayesian Methods and LLMs}
 \author{Justin Stevens}
-%\institute{Amii Team Time Talks}
+\institute{Amii Team Time Talks}
 \date{\today}
 
 \begin{document}
@@ -150,15 +150,15 @@
 \end{frame}
 
 
-\begin{frame}{Method: one Claude call per problem, two classifications}
+\begin{frame}{Method: Bayesian Methods and LLMs}
   \begin{itemize}
-    \item \texttt{claude-opus-4-8} receives the problem, difficulty level, worked solution, and the numbered Socratic chain, and returns strict JSON:
+    \item \texttt{claude-opus-4-8} receives the problem, difficulty level, worked solution, and the numbered Socratic chain, and returns strict JSON:  
     \begin{enumerate}
-      \item one hint label (\texttt{f/r/b/e}) per question, in order
-      \item one Quarfoot type for the whole problem
-    \end{enumerate}
-    \item Prompt contains both taxonomies' definitions + the worked example above as a few-shot prompt 
-    \item Every response is \textbf{validated} to make sure it is in the correct output format and retried on failure. 
+      \item one hint label (\texttt{f/r/b/e}) per question, in order  
+      \item one Quarfoot type for the whole problem (second part of the talk)
+    \end{enumerate}  
+    \item Prompt contains both taxonomies' definitions + the worked example above as a few-shot prompt   
+    \item Every response is \textbf{validated} to make sure it is in the correct output format and retried on failure.  
     \item Downstream analysis: group the chains (by domain, or by problem type), count
           transitions, Dirichlet--multinomial posterior per group, row-averaged
           symmetrized KL, similarity $e^{-KL}$
@@ -326,7 +326,9 @@
 
 \begin{frame}{Olympiad Number Theory by Justin Stevens}
 
-INSERT QR CODE HERE 
+  \begin{center}
+    \includegraphics[height=0.77\textheight]{URL QR Code.png}
+  \end{center}
 
 \end{frame}
 
@@ -397,6 +399,7 @@ Claude's Anthropic Opus 4.8 \& Fable models were used to assist with writing cod
   \small
   Code available \href{https://github.com/justinstevens42/SocraticMath}{here}.
 \end{frame}
+
 
 
 \end{document}
